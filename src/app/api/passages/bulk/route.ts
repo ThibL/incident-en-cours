@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchPassages } from "@/lib/api/prim-client";
 import { PRIMAPIError, PRIMValidationError } from "@/lib/api/prim-client";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 import type { Passage } from "@/types/prim";
 
 export const dynamic = "force-dynamic";
@@ -83,6 +84,7 @@ export async function GET(request: NextRequest) {
     const successCount = bulkResults.filter((r) => !r.error).length;
     const errorCount = bulkResults.filter((r) => r.error).length;
 
+    const { serverRevalidate, swr } = REFRESH_INTERVALS.stopMonitoring;
     return NextResponse.json(
       {
         results: bulkResults,
@@ -96,7 +98,7 @@ export async function GET(request: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=15",
+          "Cache-Control": `public, s-maxage=${serverRevalidate}, stale-while-revalidate=${swr}`,
         },
       }
     );

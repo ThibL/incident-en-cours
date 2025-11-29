@@ -7,7 +7,7 @@ import { GlassPanel, StatusIndicator, GlowBadge, LiveClock } from "@/components/
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Star, StarOff, RefreshCw, Radio, MapPin } from "lucide-react";
 import Link from "next/link";
-import { useFavoritesStore } from "@/lib/stores/favorites-store";
+import { useFavoritesStore, type FavoriteStop } from "@/lib/stores/favorites-store";
 import { usePassages, useInvalidatePassages } from "@/lib/hooks/usePassages";
 import { getLineColor } from "@/types/prim";
 import { motion } from "framer-motion";
@@ -39,11 +39,13 @@ export default function StopPage() {
     if (isFavorite) {
       removeFavorite(stopId);
     } else {
-      addFavorite({
+      const newFavorite: Omit<FavoriteStop, "addedAt"> = {
+        type: "stop",
         id: stopId,
         name: stopInfo.name,
         lines: stopInfo.lines,
-      });
+      };
+      addFavorite(newFavorite);
     }
   };
 

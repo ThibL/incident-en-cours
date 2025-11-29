@@ -10,7 +10,7 @@ import {
   ChevronUp,
   AlertOctagon
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, cleanHtmlContent } from "@/lib/utils";
 import type { TraficInfo } from "@/types/prim";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -88,7 +88,7 @@ export function TraficLineCard({ line, compact = false, index = 0 }: TraficLineC
         <StatusIndicator status={config.status} size="sm" pulse={line.status !== "normal"} />
         {hasDisruptions && (
           <span className="text-xs text-muted-foreground truncate flex-1">
-            {line.disruptions[0]?.message.slice(0, 40)}...
+            {cleanHtmlContent(line.disruptions[0]?.message || "").slice(0, 50)}...
           </span>
         )}
       </motion.div>
@@ -200,10 +200,10 @@ export function TraficLineCard({ line, compact = false, index = 0 }: TraficLineC
                         )} />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm text-foreground mb-1">
-                            {disruption.title}
+                            {cleanHtmlContent(disruption.title)}
                           </p>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {disruption.message}
+                          <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-line">
+                            {cleanHtmlContent(disruption.message)}
                           </p>
                           {disruption.endTime && (
                             <p className="text-xs text-muted-foreground mt-2 font-mono">

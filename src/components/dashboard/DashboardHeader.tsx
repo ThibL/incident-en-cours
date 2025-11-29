@@ -8,19 +8,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useCommandPalette } from "@/components/search/CommandPalette";
 
 interface DashboardHeaderProps {
-  onSearchClick?: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
 }
 
 export function DashboardHeader({
-  onSearchClick,
   onRefresh,
   isRefreshing,
 }: DashboardHeaderProps) {
   const pathname = usePathname();
+  const { open: openSearch } = useCommandPalette();
 
   const navLinks = [
     { href: "/", label: "Accueil", icon: Home },
@@ -114,20 +114,18 @@ export function DashboardHeader({
           <TraficStatus />
 
           {/* Search Button */}
-          {onSearchClick && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="hidden sm:flex gap-2 border-border/50 bg-background/30 hover:bg-background/50 hover:border-primary/50 transition-all"
-              onClick={onSearchClick}
-            >
-              <Search className="h-4 w-4" />
-              <span className="text-muted-foreground">Recherche</span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden sm:flex gap-2 border-border/50 bg-background/30 hover:bg-background/50 hover:border-primary/50 transition-all"
+            onClick={openSearch}
+          >
+            <Search className="h-4 w-4" />
+            <span className="text-muted-foreground">Recherche</span>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </Button>
 
           {/* Refresh Button */}
           {onRefresh && (

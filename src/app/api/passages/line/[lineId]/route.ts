@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchLinePassages } from "@/lib/api/prim-client";
 import { PRIMAPIError, PRIMValidationError } from "@/lib/api/prim-client";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +28,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const passages = await fetchLinePassages(lineId);
 
+    const { serverRevalidate, swr } = REFRESH_INTERVALS.stopMonitoring;
     return NextResponse.json(
       { passages, lineId, timestamp: new Date().toISOString() },
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=15",
+          "Cache-Control": `public, s-maxage=${serverRevalidate}, stale-while-revalidate=${swr}`,
         },
       }
     );

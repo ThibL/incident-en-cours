@@ -166,7 +166,11 @@ export function TraficStatusCompact() {
 }
 
 // Large status display for pages
-export function TraficStatusLarge() {
+interface TraficStatusLargeProps {
+  showMigratedStats?: boolean;
+}
+
+export function TraficStatusLarge({ showMigratedStats = false }: TraficStatusLargeProps) {
   const { summary, isLoading } = useTraficSummary();
 
   if (isLoading || !summary) {
@@ -188,10 +192,26 @@ export function TraficStatusLarge() {
   const config = statusConfig[level];
   const Icon = config.icon;
 
+  const stats = [
+    {
+      label: "Lignes",
+      value: summary.total,
+      color: "text-primary",
+      delay: 0,
+    },
+    {
+      label: "Taux Normal",
+      value: summary.total > 0 ? Math.round((summary.normal / summary.total) * 100) : 0,
+      suffix: "%",
+      color: "text-[var(--status-normal)]",
+      delay: 0.15,
+    },
+  ];
+
   return (
     <motion.div
       className={cn(
-        "flex items-center gap-4 px-4 py-3 rounded-xl glass",
+        "rounded-xl glass overflow-hidden",
         "border-l-4",
         level === "normal" && "border-l-[var(--status-normal)]",
         level === "perturbe" && "border-l-[var(--status-warning)]",
@@ -200,32 +220,106 @@ export function TraficStatusLarge() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div
-        className={cn(
-          "flex items-center justify-center h-10 w-10 rounded-lg",
-          level === "normal" && "bg-[var(--status-normal-bg)]",
-          level === "perturbe" && "bg-[var(--status-warning-bg)]",
-          level === "interrompu" && "bg-[var(--status-critical-bg)]"
-        )}
-      >
-        <Icon className={cn("h-5 w-5", config.textClass)} />
-      </div>
-      <div>
-        <p className={cn("font-mono font-bold text-sm tracking-wider", config.textClass)}>
-          {config.label.toUpperCase()}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {summary.total} lignes surveillées • {summary.normal} normales
-        </p>
-      </div>
-      {summary.hasActiveDisruptions && (
-        <div className="ml-auto text-right">
-          <p className={cn("font-mono text-2xl font-bold", config.textClass)}>
-            {summary.perturbe + summary.interrompu}
-          </p>
-          <p className="text-xs text-muted-foreground">alertes</p>
+      {/* Single row with status + migrated stats */}
+      <div className="flex items-center gap-4 px-4 py-3">
+        {/* Status icon */}
+        <div
+          className={cn(
+            "flex items-center justify-center h-10 w-10 rounded-lg shrink-0",
+            level === "normal" && "bg-[var(--status-normal-bg)]",
+            level === "perturbe" && "bg-[var(--status-warning-bg)]",
+            level === "interrompu" && "bg-[var(--status-critical-bg)]"
+          )}
+        >
+          <Icon className={cn("h-5 w-5", config.textClass)} />
         </div>
-      )}
+
+        {/* Status text */}
+        <div className="shrink-0">
+          <p className={cn("font-mono font-bold text-sm tracking-wider", config.textClass)}>
+            {config.label.toUpperCase()}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {summary.total} lignes • {summary.normal} normales
+          </p>
+        </div>
+
+        {/* Migrated stats - inline */}
+        {showMigratedStats && (
+          <div className="flex items-center gap-6 ml-auto">
+            {stats.map((stat) => (
+              <motion.div
+                key={stat.label}
+                className="relative text-center"
+                initial={{
+                  opacity: 0,
+                  x: -20,
+                  filter: "blur(6px)",
+                }}
+                animate={{
+                  opacity: 1,
+                  x: 0,
+                  filter: "blur(0px)",
+                }}
+                transition={{
+                  duration: 0.4,
+                  delay: stat.delay,
+                  ease: [0.2, 0.8, 0.2, 1],
+                }}
+              >
+                {/* Scanline effect */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none z-10 overflow-hidden rounded-lg"
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 0 }}
+                  transition={{ delay: stat.delay + 0.35, duration: 0.2 }}
+                >
+                  <motion.div
+                    className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"
+                    initial={{ top: "-10%" }}
+                    animate={{ top: "110%" }}
+                    transition={{
+                      delay: stat.delay,
+                      duration: 0.3,
+                      ease: "linear",
+                    }}
+                    style={{
+                      boxShadow: "0 0 6px var(--primary-glow), 0 0 12px var(--primary-glow)",
+                    }}
+                  />
+                </motion.div>
+
+                <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-0.5">
+                  {stat.label}
+                </p>
+                <p className={cn("font-[family-name:var(--font-orbitron)] text-2xl font-bold", stat.color)}>
+                  {stat.value}{stat.suffix || ""}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Alerts count - always visible when disruptions exist */}
+        {summary.hasActiveDisruptions && !showMigratedStats && (
+          <div className="ml-auto text-center">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-0.5">Alertes</p>
+            <p className={cn("font-[family-name:var(--font-orbitron)] text-2xl font-bold", config.textClass)}>
+              {summary.perturbe + summary.interrompu}
+            </p>
+          </div>
+        )}
+
+        {/* Alerts count when stats are shown */}
+        {summary.hasActiveDisruptions && showMigratedStats && (
+          <div className="text-center pl-6 border-l border-border/30">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-0.5">Alertes</p>
+            <p className={cn("font-[family-name:var(--font-orbitron)] text-2xl font-bold", config.textClass)}>
+              {summary.perturbe + summary.interrompu}
+            </p>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }

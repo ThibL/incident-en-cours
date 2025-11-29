@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TraficInfo, TransportMode } from "@/types/prim";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 
 interface TraficResponse {
   trafficInfo: TraficInfo[];
@@ -39,14 +40,19 @@ interface UseTraficInfoOptions {
  * @param options - Options de configuration
  */
 export function useTraficInfo(options: UseTraficInfoOptions = {}) {
-  const { enabled = true, refetchInterval = 60000, mode, lineId } = options;
+  const {
+    enabled = true,
+    refetchInterval = REFRESH_INTERVALS.lineReports.clientRefetch,
+    mode,
+    lineId,
+  } = options;
 
   return useQuery({
     queryKey: ["trafic", mode || "all", lineId],
     queryFn: () => fetchTraficFromAPI(mode, lineId),
     enabled,
     refetchInterval,
-    staleTime: 30000, // 30 secondes
+    staleTime: REFRESH_INTERVALS.lineReports.clientStale,
     select: (data) => data.trafficInfo,
   });
 }
@@ -103,7 +109,7 @@ export function usePrefetchTraficInfo() {
     queryClient.prefetchQuery({
       queryKey: ["trafic", mode || "all", undefined],
       queryFn: () => fetchTraficFromAPI(mode),
-      staleTime: 30000,
+      staleTime: REFRESH_INTERVALS.lineReports.clientStale,
     });
   };
 }

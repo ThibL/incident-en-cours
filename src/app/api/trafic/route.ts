@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTrafficInfo, fetchLineTrafficInfo } from "@/lib/api/prim-client";
 import { PRIMAPIError, PRIMValidationError } from "@/lib/api/prim-client";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 import type { TransportMode } from "@/types/prim";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
       trafficInfo = await fetchTrafficInfo(mode || undefined);
     }
 
+    const { serverRevalidate, swr } = REFRESH_INTERVALS.lineReports;
     return NextResponse.json(
       {
         trafficInfo,
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30",
+          "Cache-Control": `public, s-maxage=${serverRevalidate}, stale-while-revalidate=${swr}`,
         },
       }
     );

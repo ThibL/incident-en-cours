@@ -295,8 +295,48 @@ export const LINE_COLORS: Record<string, string> = {
   "T11": "#F28E42",
   "T12": "#00814F",
   "T13": "#CEADD2",
+  // Transilien
+  "H": "#8D5E2A",
+  "J": "#D5C900",
+  "K": "#9F9825",
+  "L": "#CEADD2",
+  "N": "#00814F",
+  "P": "#F28E42",
+  "R": "#F3A4BA",
+  "U": "#E3051C",
 };
 
 export function getLineColor(lineCode: string): string {
   return LINE_COLORS[lineCode] || "#808080";
+}
+
+// ============================================
+// Schémas pour les arrêts d'une ligne (Navitia)
+// ============================================
+
+export const NavitiaStopPointSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  coord: z.object({
+    lat: z.string(),
+    lon: z.string(),
+  }).optional(),
+  label: z.string().optional(),
+}).passthrough();
+
+export const LineStopsResponseSchema = z.object({
+  stop_points: z.array(NavitiaStopPointSchema).optional(),
+}).passthrough();
+
+export type LineStopsResponse = z.infer<typeof LineStopsResponseSchema>;
+export type NavitiaStopPoint = z.infer<typeof NavitiaStopPointSchema>;
+
+// Type simplifié pour les stations d'une ligne
+export interface LineStop {
+  id: string;
+  name: string;
+  coords?: {
+    lat: number;
+    lon: number;
+  };
 }

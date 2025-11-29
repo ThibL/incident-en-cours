@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ScreenMessage, ScreenMessageChannel } from "@/types/prim";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 
 interface ScreenMessagesResponse {
   messages: ScreenMessage[];
@@ -40,14 +41,19 @@ async function fetchScreenMessagesFromAPI(
  * @param options - Options de configuration (lineId, channel, enabled, refetchInterval)
  */
 export function useScreenMessages(options: UseScreenMessagesOptions = {}) {
-  const { lineId, channel, enabled = true, refetchInterval = 60000 } = options;
+  const {
+    lineId,
+    channel,
+    enabled = true,
+    refetchInterval = REFRESH_INTERVALS.generalMessage.clientRefetch,
+  } = options;
 
   return useQuery({
     queryKey: ["screenMessages", lineId, channel],
     queryFn: () => fetchScreenMessagesFromAPI({ lineId, channel }),
     enabled,
     refetchInterval,
-    staleTime: 30000, // 30 secondes
+    staleTime: REFRESH_INTERVALS.generalMessage.clientStale,
     select: (data) => data.messages,
   });
 }
@@ -82,7 +88,7 @@ export function usePrefetchScreenMessages() {
     queryClient.prefetchQuery({
       queryKey: ["screenMessages", options.lineId, options.channel],
       queryFn: () => fetchScreenMessagesFromAPI(options),
-      staleTime: 30000,
+      staleTime: REFRESH_INTERVALS.generalMessage.clientStale,
     });
   };
 }

@@ -1,0 +1,266 @@
+{
+  "disruptions": [
+    {
+      "id": "disruption-detour-001",
+      "status": "active",
+      "severity": {
+        "name": "déviation",
+        "effect": "DETOUR",
+        "priority": 3,
+        "color": "#FF9900"
+      },
+      "messages": [
+        {
+          "text": "Bus déviés via rue de Rivoli en raison de travaux",
+          "channel": {
+            "id": "channel-info",
+            "name": "Information"
+          }
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-15T06:00:00Z",
+          "end": "2024-01-20T22:00:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01067",
+            "name": "Bus 67",
+            "embedded_type": "line",
+            "line": {
+              "id": "line:IDFM:C01067",
+              "name": "Bus 67",
+              "code": "67",
+              "color": "6ECA97",
+              "text_color": "000000"
+            }
+          }
+        }
+      ],
+      "cause": "travaux voirie",
+      "category": "Travaux"
+    },
+    {
+      "id": "disruption-modified-002",
+      "status": "active",
+      "severity": {
+        "name": "service modifié",
+        "effect": "MODIFIED_SERVICE",
+        "priority": 3,
+        "color": "#FFCC00"
+      },
+      "messages": [
+        {
+          "text": "Desserte modifiée : le train ne marque pas l'arrêt à Nanterre-Préfecture"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-15T07:00:00Z",
+          "end": "2024-01-15T10:00:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01742",
+            "name": "RER A",
+            "embedded_type": "line",
+            "line": {
+              "id": "line:IDFM:C01742",
+              "name": "RER A",
+              "code": "A",
+              "color": "E3051C",
+              "text_color": "FFFFFF"
+            }
+          }
+        }
+      ],
+      "cause": "régulation du trafic",
+      "category": "Information"
+    },
+    {
+      "id": "disruption-stop-moved-003",
+      "status": "active",
+      "severity": {
+        "name": "arrêt déplacé",
+        "effect": "STOP_MOVED",
+        "priority": 4,
+        "color": "#0099CC"
+      },
+      "messages": [
+        {
+          "text": "L'arrêt Gare de Lyon est temporairement déplacé boulevard Diderot"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-14T00:00:00Z",
+          "end": "2024-02-15T23:59:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "stop_area:IDFM:71801",
+            "name": "Gare de Lyon",
+            "embedded_type": "stop_area"
+          }
+        }
+      ],
+      "cause": "chantier Grand Paris",
+      "category": "Travaux"
+    },
+    {
+      "id": "disruption-additional-004",
+      "status": "active",
+      "severity": {
+        "name": "service supplémentaire",
+        "effect": "ADDITIONAL_SERVICE",
+        "priority": 5,
+        "color": "#00CC66"
+      },
+      "messages": [
+        {
+          "text": "Service renforcé pour le match au Stade de France : trains supplémentaires de 20h à 00h"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-15T20:00:00Z",
+          "end": "2024-01-16T01:00:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01743",
+            "name": "RER B",
+            "embedded_type": "line",
+            "line": {
+              "id": "line:IDFM:C01743",
+              "name": "RER B",
+              "code": "B",
+              "color": "5291CE",
+              "text_color": "FFFFFF"
+            }
+          }
+        }
+      ],
+      "cause": "événement sportif",
+      "category": "Événement"
+    },
+    {
+      "id": "disruption-reduced-005",
+      "status": "future",
+      "severity": {
+        "name": "service réduit",
+        "effect": "REDUCED_SERVICE",
+        "priority": 2,
+        "color": "#FF6600"
+      },
+      "messages": [
+        {
+          "text": "Travaux : un train sur deux ce week-end entre Châtelet et La Défense"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-20T00:00:00Z",
+          "end": "2024-01-21T23:59:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01371",
+            "name": "Métro 1",
+            "embedded_type": "line",
+            "line": {
+              "id": "line:IDFM:C01371",
+              "name": "Métro 1",
+              "code": "1",
+              "color": "FFCE00",
+              "text_color": "000000"
+            }
+          }
+        }
+      ],
+      "cause": "travaux de modernisation",
+      "category": "Travaux"
+    },
+    {
+      "id": "disruption-other-006",
+      "status": "active",
+      "severity": {
+        "name": "information",
+        "effect": "OTHER_EFFECT",
+        "priority": 5,
+        "color": "#999999"
+      },
+      "messages": [
+        {
+          "text": "Pensez à recharger votre passe Navigo avant le 5 du mois"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-01T00:00:00Z",
+          "end": "2024-01-05T23:59:00Z"
+        }
+      ],
+      "impacted_objects": [],
+      "category": "Commercial"
+    }
+  ],
+  "line_reports": [
+    {
+      "line": {
+        "id": "line:IDFM:C01371",
+        "name": "Métro 1",
+        "code": "1",
+        "color": "FFCE00",
+        "text_color": "000000",
+        "physical_modes": [
+          {
+            "id": "physical_mode:Metro",
+            "name": "Métro"
+          }
+        ]
+      }
+    },
+    {
+      "line": {
+        "id": "line:IDFM:C01742",
+        "name": "RER A",
+        "code": "A",
+        "color": "E3051C",
+        "text_color": "FFFFFF",
+        "physical_modes": [
+          {
+            "id": "physical_mode:RapidTransit",
+            "name": "RER"
+          }
+        ]
+      }
+    },
+    {
+      "line": {
+        "id": "line:IDFM:C01743",
+        "name": "RER B",
+        "code": "B",
+        "color": "5291CE",
+        "text_color": "FFFFFF",
+        "physical_modes": [
+          {
+            "id": "physical_mode:RapidTransit",
+            "name": "RER"
+          }
+        ]
+      }
+    }
+  ]
+}

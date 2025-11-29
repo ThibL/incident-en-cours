@@ -9,11 +9,16 @@ import {
   DisruptionSchema,
   LineReportSchema,
   InfoMessageSchema,
+  LineStopsResponseSchema,
 } from "@/types/prim";
+import { PRIMPlacesResponseSchema } from "@/types/search";
 
 import siriFixture from "./fixtures/siri-response.json";
 import trafficFixture from "./fixtures/traffic-response.json";
 import generalMessageFixture from "./fixtures/general-message-response.json";
+import lineStopsFixture from "./fixtures/line-stops-response.json";
+import placesFixture from "./fixtures/places-response.json";
+import trafficExtendedFixture from "./fixtures/traffic-extended.json";
 
 describe("PRIM API Zod Schemas", () => {
   describe("SIRILiteResponseSchema (Stop Monitoring)", () => {
@@ -309,6 +314,232 @@ describe("PRIM API Zod Schemas", () => {
 
       const result = MonitoredCallSchema.safeParse(withExtra);
       expect(result.success).toBe(true);
+    });
+  });
+
+  describe("LineStopsResponseSchema (Navitia stop_points)", () => {
+    it("should parse a valid line stops response", () => {
+      const result = LineStopsResponseSchema.safeParse(lineStopsFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.stop_points).toHaveLength(5);
+      }
+    });
+
+    it("should handle monomodalStopPlace format", () => {
+      const result = LineStopsResponseSchema.safeParse(lineStopsFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const firstStop = result.data.stop_points?.[0];
+        expect(firstStop?.id).toContain("monomodalStopPlace");
+        expect(firstStop?.name).toBe("Châtelet");
+        expect(firstStop?.coord?.lat).toBe("48.858393");
+      }
+    });
+
+    it("should handle simple numeric stop_point IDs", () => {
+      const result = LineStopsResponseSchema.safeParse(lineStopsFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const simpleStop = result.data.stop_points?.find(
+          (s) => s.id === "stop_point:IDFM:22089"
+        );
+        expect(simpleStop?.name).toBe("Tuileries");
+      }
+    });
+
+    it("should handle empty stop_points array", () => {
+      const result = LineStopsResponseSchema.safeParse({ stop_points: [] });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.stop_points).toHaveLength(0);
+      }
+    });
+  });
+
+  describe("PRIMPlacesResponseSchema (Search results)", () => {
+    it("should parse a valid places response", () => {
+      const result = PRIMPlacesResponseSchema.safeParse(placesFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.places).toHaveLength(4);
+      }
+    });
+
+    it("should parse StopArea results with lines", () => {
+      const result = PRIMPlacesResponseSchema.safeParse(placesFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const stopArea = result.data.places?.find((p) => p.type === "StopArea");
+        expect(stopArea?.name).toBe("Châtelet");
+        expect(stopArea?.city).toBe("Paris");
+        expect(stopArea?.lines).toHaveLength(5);
+        expect(stopArea?.lines?.[0].shortName).toBe("1");
+      }
+    });
+
+    it("should parse Line results", () => {
+      const result = PRIMPlacesResponseSchema.safeParse(placesFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const line = result.data.places?.find((p) => p.type === "Line");
+        expect(line?.name).toBe("Métro 1");
+        expect(line?.shortName).toBe("1");
+        expect(line?.color).toBe("FFCE00");
+        expect(line?.mode).toHaveLength(1);
+      }
+    });
+
+    it("should handle coordinates for stops", () => {
+      const result = PRIMPlacesResponseSchema.safeParse(placesFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const stopArea = result.data.places?.[0];
+        expect(stopArea?.x).toBe(2.347118);
+        expect(stopArea?.y).toBe(48.858393);
+      }
+    });
+
+    it("should handle empty places array", () => {
+      const result = PRIMPlacesResponseSchema.safeParse({ places: [] });
+
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("Extended Disruption Effects", () => {
+    it("should parse DETOUR effect", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const detour = result.data.disruptions?.find(
+          (d) => d.severity.effect === "DETOUR"
+        );
+        expect(detour).toBeDefined();
+        expect(detour?.id).toBe("disruption-detour-001");
+        expect(detour?.cause).toBe("travaux voirie");
+      }
+    });
+
+    it("should parse MODIFIED_SERVICE effect", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const modified = result.data.disruptions?.find(
+          (d) => d.severity.effect === "MODIFIED_SERVICE"
+        );
+        expect(modified).toBeDefined();
+        expect(modified?.category).toBe("Information");
+      }
+    });
+
+    it("should parse STOP_MOVED effect", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const stopMoved = result.data.disruptions?.find(
+          (d) => d.severity.effect === "STOP_MOVED"
+        );
+        expect(stopMoved).toBeDefined();
+        expect(stopMoved?.impacted_objects?.[0].pt_object.embedded_type).toBe(
+          "stop_area"
+        );
+      }
+    });
+
+    it("should parse ADDITIONAL_SERVICE effect", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const additional = result.data.disruptions?.find(
+          (d) => d.severity.effect === "ADDITIONAL_SERVICE"
+        );
+        expect(additional).toBeDefined();
+        expect(additional?.category).toBe("Événement");
+      }
+    });
+
+    it("should parse REDUCED_SERVICE effect with future status", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const reduced = result.data.disruptions?.find(
+          (d) => d.severity.effect === "REDUCED_SERVICE"
+        );
+        expect(reduced).toBeDefined();
+        expect(reduced?.status).toBe("future");
+      }
+    });
+
+    it("should parse OTHER_EFFECT", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const other = result.data.disruptions?.find(
+          (d) => d.severity.effect === "OTHER_EFFECT"
+        );
+        expect(other).toBeDefined();
+        expect(other?.impacted_objects).toHaveLength(0);
+      }
+    });
+
+    it("should parse nested line object in impacted_objects", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        const disruption = result.data.disruptions?.[0];
+        const ptObject = disruption?.impacted_objects?.[0].pt_object;
+
+        expect(ptObject?.embedded_type).toBe("line");
+        // The line object is nested and should be accessible via passthrough
+        expect(ptObject).toHaveProperty("line");
+      }
+    });
+
+    it("should parse all 6 disruptions in extended fixture", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.disruptions).toHaveLength(6);
+
+        const effects = result.data.disruptions?.map((d) => d.severity.effect);
+        expect(effects).toContain("DETOUR");
+        expect(effects).toContain("MODIFIED_SERVICE");
+        expect(effects).toContain("STOP_MOVED");
+        expect(effects).toContain("ADDITIONAL_SERVICE");
+        expect(effects).toContain("REDUCED_SERVICE");
+        expect(effects).toContain("OTHER_EFFECT");
+      }
+    });
+
+    it("should parse line_reports in extended fixture", () => {
+      const result = TrafficInfoResponseSchema.safeParse(trafficExtendedFixture);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.line_reports).toHaveLength(3);
+
+        const lineCodes = result.data.line_reports?.map((r) => r.line.code);
+        expect(lineCodes).toContain("1");
+        expect(lineCodes).toContain("A");
+        expect(lineCodes).toContain("B");
+      }
     });
   });
 });

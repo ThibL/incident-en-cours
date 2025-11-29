@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider, isServer } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { CommandPaletteProvider } from "@/components/search/CommandPalette";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -50,7 +51,9 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <CommandPaletteProvider>
+        {children}
+      </CommandPaletteProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

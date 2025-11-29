@@ -3,28 +3,35 @@ import {
   SIRILiteResponseSchema,
   TrafficInfoResponseSchema,
   GeneralMessageResponseSchema,
+  LineStopsResponseSchema,
   type SIRILiteResponse,
   type TrafficInfoResponse,
   type GeneralMessageResponse,
+  type LineStopsResponse,
   type Passage,
   type TraficInfo,
   type SimplifiedDisruption,
   type ScreenMessage,
   type TransportMode,
   type MonitoredStopVisit,
+  type LineStop,
 } from "@/types/prim";
-
-// ============================================
-// Configuration API PRIM
-// ============================================
-
-const PRIM_BASE_URL = "https://prim.iledefrance-mobilites.fr/marketplace";
-
-// Quotas API
-const QUOTAS = {
-  passages: { limit: 1_000_000, windowMs: 24 * 60 * 60 * 1000 },
-  trafic: { limit: 20_000, windowMs: 24 * 60 * 60 * 1000 },
-};
+import {
+  PRIMPlacesResponseSchema,
+  type PRIMPlacesResponse,
+  type PRIMPlace,
+  type SearchResult,
+} from "@/types/search";
+import {
+  PRIM_BASE_URL,
+  REFRESH_INTERVALS,
+  PRIM_HEADERS,
+} from "./prim-config";
+import {
+  extractLineDisplayName,
+  extractNumericStopId,
+  logPrimRequest,
+} from "./prim-ids";
 
 // ============================================
 // Erreurs personnalisées
@@ -91,8 +98,8 @@ export class PRIMClient {
     try {
       const response = await fetch(url, {
         headers: {
-          apiKey: this.apiKey,
-          Accept: "application/json",
+          [PRIM_HEADERS.required.apiKey]: this.apiKey,
+          [PRIM_HEADERS.required.accept]: PRIM_HEADERS.values.accept,
         },
         next: {
           revalidate: options.revalidate ?? 60,
@@ -104,10 +111,14 @@ export class PRIMClient {
 
       if (!response.ok) {
         const body = await response.text();
-        console.warn(
-          `[PRIM] ERROR ${response.status} ${endpoint} (${durationMs}ms)`,
-          body.slice(0, 200)
-        );
+
+        // Détection 429 Rate Limit
+        if (response.status === 429) {
+          logPrimRequest("RATE_LIMIT", endpoint, durationMs);
+          throw new PRIMRateLimitError(endpoint);
+        }
+
+        logPrimRequest("ERROR", endpoint, durationMs, `${response.status} ${body.slice(0, 100)}`);
         throw new PRIMAPIError(response.status, response.statusText, body);
       }
 
@@ -116,17 +127,12 @@ export class PRIMClient {
       // Validation Zod
       const result = schema.safeParse(data);
       if (!result.success) {
-        console.warn(
-          `[PRIM] VALIDATION_ERROR ${endpoint} (${durationMs}ms)`,
-          result.error.issues.slice(0, 3)
-        );
+        logPrimRequest("VALIDATION", endpoint, durationMs, `${result.error.issues.length} issues`);
         throw new PRIMValidationError(result.error, endpoint);
       }
 
-      // Log succès (niveau info pour le debug)
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[PRIM] OK ${endpoint} (${durationMs}ms)`);
-      }
+      // Log succès
+      logPrimRequest("OK", endpoint, durationMs);
 
       return result.data;
     } catch (error) {
@@ -134,12 +140,13 @@ export class PRIMClient {
 
       if (
         error instanceof PRIMAPIError ||
-        error instanceof PRIMValidationError
+        error instanceof PRIMValidationError ||
+        error instanceof PRIMRateLimitError
       ) {
         throw error;
       }
 
-      console.warn(`[PRIM] FETCH_ERROR ${endpoint} (${durationMs}ms)`, error);
+      logPrimRequest("FETCH_ERROR", endpoint, durationMs, String(error));
       throw new Error(`Failed to fetch ${endpoint}: ${error}`);
     }
   }
@@ -159,7 +166,7 @@ export class PRIMClient {
     return this.fetch(
       `/stop-monitoring?MonitoringRef=${normalizedStopId}`,
       SIRILiteResponseSchema,
-      { revalidate: 30, tags: ["passages", `stop-${stopId}`] }
+      { revalidate: REFRESH_INTERVALS.stopMonitoring.serverRevalidate, tags: ["passages", `stop-${stopId}`] }
     );
   }
 
@@ -224,7 +231,7 @@ export class PRIMClient {
       : `/v2/navitia/line_reports/line_reports?count=100`;
 
     return this.fetch(endpoint, TrafficInfoResponseSchema, {
-      revalidate: 60,
+      revalidate: REFRESH_INTERVALS.lineReports.serverRevalidate,
       tags: ["trafic", mode ? `mode-${mode}` : "all-modes"],
     });
   }
@@ -238,7 +245,7 @@ export class PRIMClient {
     return this.fetch(
       `/v2/navitia/line_reports/lines/${normalizedLineId}/line_reports`,
       TrafficInfoResponseSchema,
-      { revalidate: 60, tags: ["trafic", `line-${lineId}`] }
+      { revalidate: REFRESH_INTERVALS.lineReports.serverRevalidate, tags: ["trafic", `line-${lineId}`] }
     );
   }
 
@@ -255,7 +262,7 @@ export class PRIMClient {
     return this.fetch(
       `/stop-monitoring?LineRef=${normalizedLineId}`,
       SIRILiteResponseSchema,
-      { revalidate: 30, tags: ["passages", `line-${lineId}`] }
+      { revalidate: REFRESH_INTERVALS.stopMonitoring.serverRevalidate, tags: ["passages", `line-${lineId}`] }
     );
   }
 
@@ -275,7 +282,7 @@ export class PRIMClient {
     return this.fetch(
       `/general-message?${lineRef}`,
       GeneralMessageResponseSchema,
-      { revalidate: 60, tags: ["messages", lineId ? `line-${lineId}` : "all"] }
+      { revalidate: REFRESH_INTERVALS.generalMessage.serverRevalidate, tags: ["messages", lineId ? `line-${lineId}` : "all"] }
     );
   }
 
@@ -309,8 +316,173 @@ export class PRIMClient {
     return this.fetch(
       `/disruptions_bulk`,
       TrafficInfoResponseSchema,
-      { revalidate: 120, tags: ["disruptions", "bulk"] }
+      { revalidate: REFRESH_INTERVALS.disruptionsBulk.serverRevalidate, tags: ["disruptions", "bulk"] }
     );
+  }
+
+  // ============================================
+  // API Arrêts par Ligne (Navitia)
+  // ============================================
+
+  /**
+   * Récupère tous les arrêts d'une ligne
+   * @param lineId - ID de la ligne (format C01737 ou line:IDFM:C01737)
+   */
+  async getLineStops(lineId: string): Promise<LineStopsResponse> {
+    const normalizedLineId = this.normalizeLineId(lineId);
+
+    // On utilise stop_points au lieu de stop_areas car les IDs de stop_points
+    // sont compatibles avec l'endpoint stop-monitoring
+    return this.fetch(
+      `/v2/navitia/lines/${normalizedLineId}/stop_points?count=500`,
+      LineStopsResponseSchema,
+      { revalidate: REFRESH_INTERVALS.lineStops.serverRevalidate, tags: ["line-stops", `line-${lineId}`] }
+    );
+  }
+
+  /**
+   * Transforme la réponse Navitia en arrêts simplifiés
+   * Déduplique par nom de station (plusieurs stop_points peuvent avoir le même nom)
+   */
+  parseLineStops(response: LineStopsResponse): LineStop[] {
+    if (!response.stop_points) {
+      return [];
+    }
+
+    // Dédupliquer par nom - on garde le premier stop_point pour chaque nom
+    const seenNames = new Set<string>();
+    const uniqueStops: LineStop[] = [];
+
+    for (const stop of response.stop_points) {
+      // Normaliser le nom pour la comparaison
+      const normalizedName = stop.name.toLowerCase().trim();
+
+      if (!seenNames.has(normalizedName)) {
+        seenNames.add(normalizedName);
+        uniqueStops.push({
+          id: this.extractStopPointId(stop.id),
+          name: stop.name,
+          coords: stop.coord
+            ? {
+                lat: parseFloat(stop.coord.lat),
+                lon: parseFloat(stop.coord.lon),
+              }
+            : undefined,
+        });
+      }
+    }
+
+    // Trier par nom
+    return uniqueStops.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  }
+
+  /**
+   * Extrait l'ID d'un stop_point PRIM
+   * Ex: "stop_point:IDFM:monomodalStopPlace:47918" -> "monomodalStopPlace:47918"
+   * Ex: "stop_point:IDFM:22089" -> "22089"
+   */
+  private extractStopPointId(primId: string): string {
+    // Format: stop_point:IDFM:monomodalStopPlace:47918 ou stop_point:IDFM:22089
+    const match = primId.match(/stop_point:IDFM:(.+)/);
+    return match ? match[1] : primId;
+  }
+
+  // ============================================
+  // API Recherche (PRIM Places)
+  // ============================================
+
+  /**
+   * Recherche des stations et lignes via l'API PRIM
+   * @param query - Terme de recherche (min 2 caractères)
+   * @param type - Type de résultat souhaité (stop, line, ou all)
+   */
+  async search(
+    query: string,
+    type: "stop" | "line" | "all" = "all"
+  ): Promise<PRIMPlacesResponse> {
+    const endpoint = `/places?q=${encodeURIComponent(query)}&count=20`;
+
+    return this.fetch(endpoint, PRIMPlacesResponseSchema, {
+      revalidate: REFRESH_INTERVALS.search.serverRevalidate,
+      tags: ["search"],
+    });
+  }
+
+  /**
+   * Parse la réponse PRIM Places en résultats de recherche simplifiés
+   */
+  parseSearchResults(response: PRIMPlacesResponse, type: "stop" | "line" | "all" = "all"): SearchResult[] {
+    if (!response.places) {
+      return [];
+    }
+
+    return response.places
+      .filter((place) => {
+        // Filtrer par type si demandé
+        if (type === "stop") return place.type === "StopArea";
+        if (type === "line") return place.type === "Line";
+        // Pour "all", on ne garde que StopArea (pas City ni Address)
+        return place.type === "StopArea" || place.type === "Line";
+      })
+      .slice(0, 10) // Limiter à 10 résultats
+      .map((place): SearchResult => this.mapPlaceToSearchResult(place));
+  }
+
+  /**
+   * Convertit un PRIMPlace en SearchResult
+   * Garde le ref complet et ajoute numericId pour compatibilité
+   */
+  private mapPlaceToSearchResult(place: PRIMPlace): SearchResult {
+    if (place.type === "StopArea") {
+      return {
+        id: place.id, // Garde le ref complet (stop_area:IDFM:71264)
+        numericId: extractNumericStopId(place.id), // ID numérique pour compat
+        name: place.name,
+        type: "stop",
+        city: place.city,
+        lines: place.lines?.map((l) => l.shortName || l.id) || [],
+        coords: place.x && place.y
+          ? { lat: place.y, lon: place.x } // Note: x=lon, y=lat dans la projection Lambert
+          : undefined,
+      };
+    } else if (place.type === "Line") {
+      return {
+        id: place.id, // Garde le ref complet (line:IDFM:C01371)
+        name: place.name,
+        type: "line",
+        code: place.shortName,
+        color: place.color ? `#${place.color}` : undefined,
+        mode: this.extractModeFromArray(place.mode),
+      };
+    }
+
+    // Fallback
+    return {
+      id: place.id,
+      name: place.name,
+      type: "stop",
+    };
+  }
+
+
+  /**
+   * Extrait le mode de transport depuis un tableau de modes
+   */
+  private extractModeFromArray(
+    modes?: Array<{ id: string; name: string }>
+  ): "Metro" | "RER" | "Tramway" | "Bus" | "Transilien" | undefined {
+    if (!modes || modes.length === 0) {
+      return undefined;
+    }
+
+    const modeId = modes[0].id;
+    if (modeId.includes("Metro")) return "Metro";
+    if (modeId.includes("RapidTransit")) return "RER";
+    if (modeId.includes("Tramway")) return "Tramway";
+    if (modeId.includes("LocalTrain")) return "Transilien";
+    if (modeId.includes("Bus")) return "Bus";
+
+    return undefined;
   }
 
   /**
@@ -391,11 +563,17 @@ export class PRIMClient {
   // ============================================
 
   private normalizeStopId(stopId: string): string {
-    // Si l'ID est déjà au format STIF, le retourner tel quel
+    // Si l'ID est déjà au format STIF complet, le retourner tel quel
     if (stopId.startsWith("STIF:StopPoint:") || stopId.startsWith("stop_point:")) {
       return encodeURIComponent(stopId);
     }
-    // Sinon, construire l'ID au format STIF
+
+    // Format monomodalStopPlace:47918 -> utiliser stop_point:IDFM:monomodalStopPlace:47918
+    if (stopId.startsWith("monomodalStopPlace:")) {
+      return encodeURIComponent(`stop_point:IDFM:${stopId}`);
+    }
+
+    // Format numérique simple (ex: 22089) -> format STIF
     return encodeURIComponent(`STIF:StopPoint:Q:${stopId}:`);
   }
 
@@ -417,30 +595,12 @@ export class PRIMClient {
     return encodeURIComponent(`STIF:Line::${code}:`);
   }
 
+  /**
+   * Extrait le nom affiché d'une ligne
+   * Utilise le helper centralisé de prim-ids.ts
+   */
   private extractLineName(lineRef: string): string {
-    // Mapping des codes ligne IDFM vers les noms affichés
-    const lineMapping: Record<string, string> = {
-      // Métro
-      "C01371": "1", "C01372": "2", "C01373": "3", "C01386": "3bis",
-      "C01374": "4", "C01375": "5", "C01376": "6", "C01377": "7",
-      "C01387": "7bis", "C01378": "8", "C01379": "9", "C01380": "10",
-      "C01381": "11", "C01382": "12", "C01383": "13", "C01384": "14",
-      // RER
-      "C01742": "A", "C01743": "B", "C01727": "C", "C01728": "D", "C01729": "E",
-      // Tramway
-      "C01389": "T1", "C01390": "T2", "C01391": "T3a", "C01679": "T3b",
-      "C01843": "T4", "C02317": "T5", "C01394": "T6", "C01774": "T7",
-      "C01795": "T8", "C02344": "T9", "C02528": "T10", "C01999": "T11",
-      "C02529": "T12", "C02530": "T13",
-    };
-
-    // Extraire le code ligne (ex: "STIF:Line::C01371:" -> "C01371")
-    const match = lineRef.match(/C\d+/);
-    if (match) {
-      const code = match[0];
-      return lineMapping[code] || code;
-    }
-    return lineRef.split(":").pop() || lineRef;
+    return extractLineDisplayName(lineRef);
   }
 
   private computeLineStatus(
@@ -564,4 +724,19 @@ export async function fetchBulkDisruptions(): Promise<TraficInfo[]> {
   const client = getPRIMClient();
   const response = await client.getBulkDisruptions();
   return client.parseTrafficInfo(response);
+}
+
+export async function searchPlaces(
+  query: string,
+  type: "stop" | "line" | "all" = "all"
+): Promise<SearchResult[]> {
+  const client = getPRIMClient();
+  const response = await client.search(query, type);
+  return client.parseSearchResults(response, type);
+}
+
+export async function fetchLineStops(lineId: string): Promise<LineStop[]> {
+  const client = getPRIMClient();
+  const response = await client.getLineStops(lineId);
+  return client.parseLineStops(response);
 }

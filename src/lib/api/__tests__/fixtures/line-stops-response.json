@@ -1,0 +1,49 @@
+{
+  "stop_points": [
+    {
+      "id": "stop_point:IDFM:monomodalStopPlace:47918",
+      "name": "Châtelet",
+      "coord": {
+        "lat": "48.858393",
+        "lon": "2.347118"
+      },
+      "label": "Châtelet (Paris)"
+    },
+    {
+      "id": "stop_point:IDFM:monomodalStopPlace:47919",
+      "name": "Louvre - Rivoli",
+      "coord": {
+        "lat": "48.860611",
+        "lon": "2.340838"
+      },
+      "label": "Louvre - Rivoli (Paris)"
+    },
+    {
+      "id": "stop_point:IDFM:monomodalStopPlace:47920",
+      "name": "Palais Royal - Musée du Louvre",
+      "coord": {
+        "lat": "48.862327",
+        "lon": "2.336515"
+      },
+      "label": "Palais Royal - Musée du Louvre (Paris)"
+    },
+    {
+      "id": "stop_point:IDFM:22089",
+      "name": "Tuileries",
+      "coord": {
+        "lat": "48.864613",
+        "lon": "2.329379"
+      },
+      "label": "Tuileries (Paris)"
+    },
+    {
+      "id": "stop_point:IDFM:22090",
+      "name": "Concorde",
+      "coord": {
+        "lat": "48.865433",
+        "lon": "2.321474"
+      },
+      "label": "Concorde (Paris)"
+    }
+  ]
+}

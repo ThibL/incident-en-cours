@@ -6,13 +6,14 @@ import { useFavoritesStore } from "@/lib/stores/favorites-store";
 import { calculateLateChance, generateHumorQuote, type LateChanceResult } from "@/lib/utils/late-chance-calculator";
 
 export function useLateChance(options?: { humorMode?: boolean }) {
-  const { favorites } = useFavoritesStore();
+  const getStops = useFavoritesStore((state) => state.getStops);
+  const favoriteStops = getStops();
   const { data: traffic, isLoading } = useTraficInfo({ refetchInterval: 30000 });
 
   const result: LateChanceResult | null = useMemo(() => {
     if (!traffic) return null;
 
-    const baseResult = calculateLateChance(favorites, traffic);
+    const baseResult = calculateLateChance(favoriteStops, traffic);
 
     // Add humor quote if enabled
     if (options?.humorMode) {
@@ -23,7 +24,7 @@ export function useLateChance(options?: { humorMode?: boolean }) {
     }
 
     return baseResult;
-  }, [favorites, traffic, options?.humorMode]);
+  }, [favoriteStops, traffic, options?.humorMode]);
 
   return { result, isLoading };
 }

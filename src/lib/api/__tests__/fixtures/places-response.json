@@ -1,0 +1,126 @@
+{
+  "places": [
+    {
+      "id": "stop_area:IDFM:71264",
+      "name": "Châtelet",
+      "type": "StopArea",
+      "quality": 95,
+      "x": 2.347118,
+      "y": 48.858393,
+      "city": "Paris",
+      "zipCode": "75001",
+      "insee": "75101",
+      "lines": [
+        {
+          "id": "line:IDFM:C01371",
+          "shortName": "1",
+          "color": "FFCE00",
+          "textColor": "000000",
+          "mode": [
+            { "id": "physical_mode:Metro", "name": "Métro" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01374",
+          "shortName": "4",
+          "color": "C04191",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:Metro", "name": "Métro" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01377",
+          "shortName": "7",
+          "color": "F3A4BA",
+          "textColor": "000000",
+          "mode": [
+            { "id": "physical_mode:Metro", "name": "Métro" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01381",
+          "shortName": "11",
+          "color": "8D5E2A",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:Metro", "name": "Métro" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01384",
+          "shortName": "14",
+          "color": "662483",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:Metro", "name": "Métro" }
+          ]
+        }
+      ],
+      "modes": ["Metro"]
+    },
+    {
+      "id": "stop_area:IDFM:71287",
+      "name": "Châtelet - Les Halles",
+      "type": "StopArea",
+      "quality": 90,
+      "x": 2.346999,
+      "y": 48.861562,
+      "city": "Paris",
+      "zipCode": "75001",
+      "insee": "75101",
+      "lines": [
+        {
+          "id": "line:IDFM:C01742",
+          "shortName": "A",
+          "color": "E3051C",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:RapidTransit", "name": "RER" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01743",
+          "shortName": "B",
+          "color": "5291CE",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:RapidTransit", "name": "RER" }
+          ]
+        },
+        {
+          "id": "line:IDFM:C01728",
+          "shortName": "D",
+          "color": "00814F",
+          "textColor": "FFFFFF",
+          "mode": [
+            { "id": "physical_mode:RapidTransit", "name": "RER" }
+          ]
+        }
+      ],
+      "modes": ["RER"]
+    },
+    {
+      "id": "line:IDFM:C01371",
+      "name": "Métro 1",
+      "type": "Line",
+      "shortName": "1",
+      "color": "FFCE00",
+      "textColor": "000000",
+      "mode": [
+        { "id": "physical_mode:Metro", "name": "Métro" }
+      ]
+    },
+    {
+      "id": "line:IDFM:C01389",
+      "name": "Tramway T1",
+      "type": "Line",
+      "shortName": "T1",
+      "color": "0064B0",
+      "textColor": "FFFFFF",
+      "mode": [
+        { "id": "physical_mode:Tramway", "name": "Tramway" }
+      ]
+    }
+  ]
+}

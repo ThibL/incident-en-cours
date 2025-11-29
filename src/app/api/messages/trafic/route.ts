@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTrafficInfo, fetchBulkDisruptions } from "@/lib/api/prim-client";
 import { PRIMAPIError, PRIMValidationError } from "@/lib/api/prim-client";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       ? await fetchBulkDisruptions()
       : await fetchTrafficInfo();
 
+    const interval = bulk ? REFRESH_INTERVALS.disruptionsBulk : REFRESH_INTERVALS.lineReports;
     return NextResponse.json(
       {
         trafficInfo,
@@ -29,9 +31,7 @@ export async function GET(request: NextRequest) {
       {
         status: 200,
         headers: {
-          "Cache-Control": bulk
-            ? "public, s-maxage=120, stale-while-revalidate=60"
-            : "public, s-maxage=60, stale-while-revalidate=30",
+          "Cache-Control": `public, s-maxage=${interval.serverRevalidate}, stale-while-revalidate=${interval.swr}`,
         },
       }
     );

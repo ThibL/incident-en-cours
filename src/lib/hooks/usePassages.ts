@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Passage } from "@/types/prim";
+import { REFRESH_INTERVALS } from "@/lib/api/prim-config";
 
 interface PassagesResponse {
   passages: Passage[];
@@ -48,14 +49,17 @@ export function usePassages(
   stopId: string | null,
   options: UsePassagesOptions = {}
 ) {
-  const { enabled = true, refetchInterval = 30000 } = options;
+  const {
+    enabled = true,
+    refetchInterval = REFRESH_INTERVALS.stopMonitoring.clientRefetch,
+  } = options;
 
   return useQuery({
     queryKey: ["passages", stopId],
     queryFn: () => fetchPassagesFromAPI(stopId!),
     enabled: enabled && !!stopId,
     refetchInterval,
-    staleTime: 15000, // 15 secondes
+    staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
     select: (data) => data.passages,
   });
 }
@@ -70,7 +74,7 @@ export function usePrefetchPassages() {
     queryClient.prefetchQuery({
       queryKey: ["passages", stopId],
       queryFn: () => fetchPassagesFromAPI(stopId),
-      staleTime: 15000,
+      staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
     });
   };
 }
@@ -99,14 +103,17 @@ export function useLinePassages(
   lineId: string | null,
   options: UsePassagesOptions = {}
 ) {
-  const { enabled = true, refetchInterval = 30000 } = options;
+  const {
+    enabled = true,
+    refetchInterval = REFRESH_INTERVALS.stopMonitoring.clientRefetch,
+  } = options;
 
   return useQuery({
     queryKey: ["passages", "line", lineId],
     queryFn: () => fetchLinePassagesFromAPI(lineId!),
     enabled: enabled && !!lineId,
     refetchInterval,
-    staleTime: 15000,
+    staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
     select: (data) => data.passages,
   });
 }
@@ -121,7 +128,7 @@ export function usePrefetchLinePassages() {
     queryClient.prefetchQuery({
       queryKey: ["passages", "line", lineId],
       queryFn: () => fetchLinePassagesFromAPI(lineId),
-      staleTime: 15000,
+      staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
     });
   };
 }
@@ -169,7 +176,10 @@ export function useBulkPassages(
   stopIds: string[],
   options: UsePassagesOptions = {}
 ) {
-  const { enabled = true, refetchInterval = 30000 } = options;
+  const {
+    enabled = true,
+    refetchInterval = REFRESH_INTERVALS.stopMonitoring.clientRefetch,
+  } = options;
 
   // Trier les IDs pour une clé de cache stable
   const sortedIds = [...stopIds].sort();
@@ -179,7 +189,7 @@ export function useBulkPassages(
     queryFn: () => fetchBulkPassagesFromAPI(sortedIds),
     enabled: enabled && sortedIds.length > 0,
     refetchInterval,
-    staleTime: 15000,
+    staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
   });
 }
 
@@ -194,7 +204,7 @@ export function usePrefetchBulkPassages() {
     queryClient.prefetchQuery({
       queryKey: ["passages", "bulk", sortedIds],
       queryFn: () => fetchBulkPassagesFromAPI(sortedIds),
-      staleTime: 15000,
+      staleTime: REFRESH_INTERVALS.stopMonitoring.clientStale,
     });
   };
 }
