@@ -1,0 +1,51 @@
+{
+  "Siri": {
+    "ServiceDelivery": {
+      "ResponseTimestamp": "2024-01-15T10:30:00Z",
+      "ProducerRef": "IDFM",
+      "ResponseMessageIdentifier": "test-123",
+      "StopMonitoringDelivery": [
+        {
+          "ResponseTimestamp": "2024-01-15T10:30:00Z",
+          "Version": "2.0",
+          "Status": "true",
+          "MonitoredStopVisit": [
+            {
+              "RecordedAtTime": "2024-01-15T10:29:00Z",
+              "ItemIdentifier": "item-1",
+              "MonitoringRef": { "value": "STIF:StopPoint:Q:12345:" },
+              "MonitoredVehicleJourney": {
+                "LineRef": { "value": "STIF:Line::C01371:" },
+                "OperatorRef": { "value": "RATP" },
+                "DirectionName": [{ "value": "La Défense" }],
+                "DestinationRef": { "value": "STIF:StopPoint:Q:99999:" },
+                "DestinationName": [{ "value": "La Défense (Grande Arche)" }],
+                "MonitoredCall": {
+                  "ExpectedDepartureTime": "2024-01-15T10:35:00Z",
+                  "AimedDepartureTime": "2024-01-15T10:34:00Z",
+                  "DepartureStatus": "onTime",
+                  "StopPointName": [{ "value": "Châtelet" }],
+                  "VehicleAtStop": false
+                }
+              }
+            },
+            {
+              "RecordedAtTime": "2024-01-15T10:29:30Z",
+              "ItemIdentifier": "item-2",
+              "MonitoringRef": { "value": "STIF:StopPoint:Q:12345:" },
+              "MonitoredVehicleJourney": {
+                "LineRef": { "value": "STIF:Line::C01371:" },
+                "DirectionName": [{ "value": "Château de Vincennes" }],
+                "DestinationName": [{ "value": "Château de Vincennes" }],
+                "MonitoredCall": {
+                  "ExpectedDepartureTime": "2024-01-15T10:38:00Z",
+                  "DepartureStatus": "delayed"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

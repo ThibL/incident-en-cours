@@ -1,26 +1,499 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   TRANSIT COMMAND - Control Room Design System
+   ============================================ */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+  --font-display: var(--font-orbitron);
+
+  /* Glassmorphism */
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+  --color-glass-highlight: var(--glass-highlight);
+
+  /* Status Colors */
+  --color-status-normal: var(--status-normal);
+  --color-status-warning: var(--status-warning);
+  --color-status-critical: var(--status-critical);
+
+  /* Sidebar (keeping for compatibility) */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* Charts */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* Core */
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* ========== Control Room Dark Theme ========== */
+
+  /* Base - Deep space black with blue undertone */
+  --background: oklch(0.08 0.015 250);
+  --background-elevated: oklch(0.11 0.02 250);
+  --background-surface: oklch(0.14 0.02 250);
+  --foreground: oklch(0.95 0.01 250);
+
+  /* Card surfaces */
+  --card: oklch(0.11 0.02 250);
+  --card-foreground: oklch(0.95 0.01 250);
+
+  /* Popover */
+  --popover: oklch(0.12 0.02 250);
+  --popover-foreground: oklch(0.95 0.01 250);
+
+  /* Primary - Electric Cyan */
+  --primary: oklch(0.75 0.18 195);
+  --primary-foreground: oklch(0.08 0.015 250);
+  --primary-glow: oklch(0.75 0.18 195 / 0.4);
+  --primary-dim: oklch(0.55 0.12 195);
+
+  /* Secondary */
+  --secondary: oklch(0.16 0.02 250);
+  --secondary-foreground: oklch(0.95 0.01 250);
+
+  /* Muted */
+  --muted: oklch(0.18 0.02 250);
+  --muted-foreground: oklch(0.65 0.02 250);
+  --foreground-dim: oklch(0.45 0.02 250);
+
+  /* Accent */
+  --accent: oklch(0.18 0.02 250);
+  --accent-foreground: oklch(0.95 0.01 250);
+
+  /* Destructive */
+  --destructive: oklch(0.65 0.25 25);
+
+  /* Borders */
+  --border: oklch(1 0 0 / 0.08);
+  --border-strong: oklch(1 0 0 / 0.15);
+  --input: oklch(1 0 0 / 0.1);
+  --ring: var(--primary);
+
+  /* ========== Status Colors with Glows ========== */
+  --status-normal: oklch(0.72 0.19 155);
+  --status-normal-glow: oklch(0.72 0.19 155 / 0.35);
+  --status-normal-bg: oklch(0.72 0.19 155 / 0.08);
+
+  --status-warning: oklch(0.78 0.18 70);
+  --status-warning-glow: oklch(0.78 0.18 70 / 0.35);
+  --status-warning-bg: oklch(0.78 0.18 70 / 0.08);
+
+  --status-critical: oklch(0.65 0.25 25);
+  --status-critical-glow: oklch(0.65 0.25 25 / 0.35);
+  --status-critical-bg: oklch(0.65 0.25 25 / 0.08);
+
+  /* ========== Glassmorphism ========== */
+  --glass-bg: oklch(0.15 0.02 250 / 0.6);
+  --glass-border: oklch(1 0 0 / 0.08);
+  --glass-highlight: oklch(1 0 0 / 0.04);
+  --glass-shadow: 0 8px 32px oklch(0 0 0 / 0.4);
+
+  /* ========== Grid/Pattern Overlay ========== */
+  --grid-line: oklch(1 0 0 / 0.03);
+  --scanline: oklch(0 0 0 / 0.02);
+
+  /* ========== Chart Colors (Neon Palette) ========== */
+  --chart-1: oklch(0.75 0.18 195);  /* Cyan */
+  --chart-2: oklch(0.72 0.19 155);  /* Emerald */
+  --chart-3: oklch(0.78 0.18 70);   /* Amber */
+  --chart-4: oklch(0.70 0.20 280);  /* Purple */
+  --chart-5: oklch(0.65 0.25 25);   /* Red */
+
+  /* ========== Transport Line Colors ========== */
+  --line-metro-1: #FFCE00;
+  --line-metro-2: #0064B0;
+  --line-metro-3: #9F9825;
+  --line-metro-4: #C04191;
+  --line-metro-5: #F28E42;
+  --line-metro-6: #83C491;
+  --line-metro-7: #F3A4BA;
+  --line-metro-8: #CEADD2;
+  --line-metro-9: #D5C900;
+  --line-metro-10: #E3B32A;
+  --line-metro-11: #8D5E2A;
+  --line-metro-12: #00814F;
+  --line-metro-13: #98D4E2;
+  --line-metro-14: #662483;
+  --line-rer-a: #E3051C;
+  --line-rer-b: #5291CE;
+  --line-rer-c: #FFCE00;
+  --line-rer-d: #00814F;
+  --line-rer-e: #BD76A1;
+
+  /* Sidebar (for compatibility) */
+  --sidebar: oklch(0.11 0.02 250);
+  --sidebar-foreground: oklch(0.95 0.01 250);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: oklch(0.08 0.015 250);
+  --sidebar-accent: oklch(0.18 0.02 250);
+  --sidebar-accent-foreground: oklch(0.95 0.01 250);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: var(--primary);
+
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+/* Force dark mode - Control Room is always dark */
+.dark {
+  /* Same as root - we're always in dark mode */
+}
+
+/* ========== Base Styles ========== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(ellipse at 50% 0%, oklch(0.15 0.04 250) 0%, transparent 50%),
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    background-attachment: fixed;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========== Glassmorphism Utilities ========== */
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-subtle {
+    background: oklch(0.12 0.02 250 / 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-highlight {
+    background: linear-gradient(
+      to bottom,
+      var(--glass-highlight),
+      transparent
+    );
+  }
+
+  /* Glow effects */
+  .glow-cyan {
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 20px var(--status-normal-glow);
+  }
+
+  .glow-amber {
+    box-shadow: 0 0 20px var(--status-warning-glow);
+  }
+
+  .glow-red {
+    box-shadow: 0 0 20px var(--status-critical-glow);
+  }
+
+  /* Text glow */
+  .text-glow-cyan {
+    text-shadow: 0 0 10px var(--primary-glow);
+  }
+
+  .text-glow-emerald {
+    text-shadow: 0 0 10px var(--status-normal-glow);
+  }
+
+  .text-glow-amber {
+    text-shadow: 0 0 10px var(--status-warning-glow);
+  }
+
+  .text-glow-red {
+    text-shadow: 0 0 10px var(--status-critical-glow);
+  }
+
+  /* Tabular numbers for countdowns */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Border glow effect */
+  .border-glow {
+    position: relative;
+  }
+
+  .border-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom right,
+      var(--primary),
+      transparent,
+      var(--primary)
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+  }
+}
+
+/* ========== Animations ========== */
+@layer utilities {
+  /* Pulse animations for status indicators */
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes pulse-medium {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes pulse-fast {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.15);
+    }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-medium {
+    animation: pulse-medium 1.5s ease-in-out infinite;
+  }
+
+  .animate-pulse-fast {
+    animation: pulse-fast 0.8s ease-in-out infinite;
+  }
+
+  /* Glow pulse animations */
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 5px var(--glow-color, var(--primary-glow));
+    }
+    50% {
+      box-shadow: 0 0 20px var(--glow-color, var(--primary-glow)),
+                  0 0 30px var(--glow-color, var(--primary-glow));
+    }
+  }
+
+  .animate-glow {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Scanline effect */
+  @keyframes scanline {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100vh);
+    }
+  }
+
+  .scanline-overlay::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    background: linear-gradient(
+      transparent 50%,
+      var(--scanline) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: scanline 8s linear infinite;
+    opacity: 0.3;
+    z-index: 9999;
+  }
+
+  /* Data stream effect */
+  @keyframes data-stream {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+      filter: blur(4px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(10px);
+      filter: blur(4px);
+    }
+  }
+
+  .animate-data-stream {
+    animation: data-stream 0.5s ease-out;
+  }
+
+  /* Breathing dot for live indicators */
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.7;
+    }
+  }
+
+  .animate-breathe {
+    animation: breathe 2s ease-in-out infinite;
+  }
+
+  /* Border trace animation */
+  @keyframes border-trace {
+    0% {
+      background-position: 0% 0%;
+    }
+    100% {
+      background-position: 200% 0%;
+    }
+  }
+
+  .animate-border-trace {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--primary),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: border-trace 2s linear infinite;
+  }
+
+  /* Spin slow for logos */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  /* Blink for indicators */
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  .animate-blink {
+    animation: blink 1s ease-in-out infinite;
+  }
+}
+
+/* ========== Scrollbar Styling ========== */
+@layer base {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background-elevated);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.15);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 0.25);
+  }
+}
+
+/* ========== Selection Styling ========== */
+@layer base {
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
 }

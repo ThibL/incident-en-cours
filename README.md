@@ -1,4 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IDFM Dashboard
+
+Tableau de bord temps réel pour les transports en commun d'Île-de-France (RATP/IDFM).
+
+## Configuration
+
+### Variables d'environnement
+
+Créer un fichier `.env.local` :
+
+```bash
+# Clé API PRIM (obligatoire)
+# Obtenir une clé : https://prim.iledefrance-mobilites.fr
+PRIM_API_KEY=your_api_key_here
+
+# URL de l'application
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+## API PRIM - Endpoints utilisés
+
+| Endpoint | Description | Quota journalier | Cache |
+|----------|-------------|------------------|-------|
+| `/stop-monitoring?MonitoringRef={stopId}` | Prochains passages à un arrêt | 1 000 000 | 30s |
+| `/stop-monitoring?LineRef={lineId}` | Passages pour une ligne | 1 000 000 | 30s |
+| `/v2/navitia/line_reports` | Info trafic globale | 20 000 | 60s |
+| `/v2/navitia/line_reports/physical_modes/{mode}/line_reports` | Info trafic par mode | 20 000 | 60s |
+| `/general-message` | Messages écrans | 20 000 | 60s |
+| `/disruptions_bulk` | Toutes les perturbations | 18 000 | 120s |
+
+### Routes API Next.js
+
+| Route | Méthode | Description | Params |
+|-------|---------|-------------|--------|
+| `/api/passages/{stopId}` | GET | Passages à un arrêt | - |
+| `/api/passages/line/{lineId}` | GET | Passages d'une ligne | - |
+| `/api/passages/bulk` | GET | Passages multi-arrêts | `stops` (comma-separated, max 10) |
+| `/api/trafic` | GET | Info trafic | `mode`, `lineId` |
+| `/api/messages/affichage` | GET | Messages écrans | `lineId`, `channel` |
+| `/api/messages/trafic` | GET | Messages trafic | `bulk` (boolean) |
+
+### Modes de transport
+
+- `Metro` - Métro RATP
+- `RER` - RER (RapidTransit)
+- `Tramway` - Tramway
+- `Bus` - Bus
+- `Transilien` - Trains de banlieue (LocalTrain)
 
 ## Getting Started
 
@@ -28,6 +75,16 @@ To learn more about Next.js, take a look at the following resources:
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Tests
+
+```bash
+# Lancer les tests en mode watch
+npm test
+
+# Lancer les tests une seule fois
+npm run test:run
+```
 
 ## Deploy on Vercel
 

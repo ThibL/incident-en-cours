@@ -1,0 +1,103 @@
+{
+  "disruptions": [
+    {
+      "id": "disruption-123",
+      "status": "active",
+      "severity": {
+        "name": "perturbation",
+        "effect": "SIGNIFICANT_DELAYS",
+        "priority": 2,
+        "color": "#FF6600"
+      },
+      "messages": [
+        {
+          "text": "Trafic perturbé suite à un incident voyageur",
+          "channel": {
+            "id": "channel-1",
+            "name": "Perturbation"
+          }
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-15T08:00:00Z",
+          "end": "2024-01-15T12:00:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01371",
+            "name": "Ligne 1",
+            "embedded_type": "line"
+          }
+        }
+      ],
+      "cause": "incident voyageur",
+      "category": "Incident"
+    },
+    {
+      "id": "disruption-456",
+      "status": "active",
+      "severity": {
+        "name": "interruption",
+        "effect": "NO_SERVICE",
+        "priority": 1,
+        "color": "#FF0000"
+      },
+      "messages": [
+        {
+          "text": "Trafic interrompu entre Bastille et Nation"
+        }
+      ],
+      "application_periods": [
+        {
+          "begin": "2024-01-15T09:00:00Z",
+          "end": "2024-01-15T11:00:00Z"
+        }
+      ],
+      "impacted_objects": [
+        {
+          "pt_object": {
+            "id": "line:IDFM:C01378",
+            "name": "Ligne 8",
+            "embedded_type": "line"
+          }
+        }
+      ],
+      "cause": "colis suspect",
+      "category": "Sécurité"
+    }
+  ],
+  "line_reports": [
+    {
+      "line": {
+        "id": "line:IDFM:C01371",
+        "name": "Ligne 1",
+        "code": "1",
+        "color": "FFCE00",
+        "text_color": "000000",
+        "physical_modes": [
+          {
+            "id": "physical_mode:Metro",
+            "name": "Métro"
+          }
+        ]
+      }
+    },
+    {
+      "line": {
+        "id": "line:IDFM:C01378",
+        "name": "Ligne 8",
+        "code": "8",
+        "color": "CEADD2",
+        "physical_modes": [
+          {
+            "id": "physical_mode:Metro",
+            "name": "Métro"
+          }
+        ]
+      }
+    }
+  ]
+}

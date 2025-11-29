@@ -1,0 +1,70 @@
+{
+  "Siri": {
+    "ServiceDelivery": {
+      "ResponseTimestamp": "2024-01-15T10:30:00Z",
+      "ProducerRef": "IDFM",
+      "GeneralMessageDelivery": [
+        {
+          "ResponseTimestamp": "2024-01-15T10:30:00Z",
+          "Version": "2.0",
+          "Status": "true",
+          "InfoMessage": [
+            {
+              "RecordedAtTime": "2024-01-15T09:00:00Z",
+              "InfoMessageIdentifier": "msg-001",
+              "InfoMessageVersion": 1,
+              "InfoChannelRef": "Perturbation",
+              "ValidUntilTime": "2024-01-15T18:00:00Z",
+              "Content": {
+                "Message": [
+                  {
+                    "MessageType": "textOnly",
+                    "MessageText": {
+                      "value": "Suite à un incident technique, le trafic est ralenti sur la ligne 1."
+                    }
+                  }
+                ],
+                "LineRef": [
+                  { "value": "STIF:Line::C01371:" }
+                ]
+              }
+            },
+            {
+              "RecordedAtTime": "2024-01-15T08:00:00Z",
+              "InfoMessageIdentifier": "msg-002",
+              "InfoChannelRef": "Information",
+              "Content": {
+                "Message": [
+                  {
+                    "MessageType": "textOnly",
+                    "MessageText": {
+                      "value": "Travaux prévus ce week-end sur la ligne RER A."
+                    }
+                  }
+                ],
+                "LineRef": [
+                  { "value": "STIF:Line::C01742:" }
+                ]
+              }
+            },
+            {
+              "RecordedAtTime": "2024-01-15T07:00:00Z",
+              "InfoMessageIdentifier": "msg-003",
+              "InfoChannelRef": "Commercial",
+              "Content": {
+                "Message": [
+                  {
+                    "MessageType": "textOnly",
+                    "MessageText": {
+                      "value": "Nouveau service : rechargez votre pass Navigo en station."
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
